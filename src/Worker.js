@@ -156,8 +156,11 @@ function run(data) {
             },
             options
           );
-          if (!out || out === source) {
-            updateStatus(out ? 'nochange' : 'skip', file);
+          if (
+            !(options.transformFileIn && options.transformFileOut) &&
+            (!out || out === source)
+          ) {
+            updateStatus(out ? "nochange" : "skip", file);
             callback();
             return;
           }
@@ -165,14 +168,29 @@ function run(data) {
             console.log(out); // eslint-disable-line no-console
           }
           if (!options.dry) {
-            writeFileAtomic(file, out, function(err) {
-              if (err) {
-                updateStatus('error', file, 'File writer error: ' + err);
-              } else {
-                updateStatus('ok', file);
-              }
-              callback();
-            });
+            if (options.transformFileIn && options.transformFileOut) {
+              const outFile = file.replace(
+                new RegExp(options.transformFileIn),
+                options.transformFileOut
+              );
+              writeFileAtomic(outFile, out || source, function(err) {
+                if (err) {
+                  updateStatus("error", file, "File writer error: " + err);
+                } else {
+                  updateStatus("ok", file);
+                }
+                fs.unlink(file, callback);
+              });
+            } else {
+              writeFileAtomic(file, out, function(err) {
+                if (err) {
+                  updateStatus("error", file, "File writer error: " + err);
+                } else {
+                  updateStatus("ok", file);
+                }
+                callback();
+              });
+            }
           } else {
             updateStatus('ok', file);
             callback();
