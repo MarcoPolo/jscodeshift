@@ -181,6 +181,8 @@ function run(data) {
                 }
                 if (outFile != file) {
                   fs.unlink(file, callback);
+                } else {
+                  callback();
                 }
               });
             } else {
