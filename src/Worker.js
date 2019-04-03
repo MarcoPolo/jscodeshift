@@ -179,7 +179,9 @@ function run(data) {
                 } else {
                   updateStatus("ok", file);
                 }
-                fs.unlink(file, callback);
+                if (outFile != file) {
+                  fs.unlink(file, callback);
+                }
               });
             } else {
               writeFileAtomic(file, out, function(err) {
